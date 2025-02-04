@@ -51,7 +51,7 @@ pip install menchero-method
 
 ```python
 import pandas as pd
-from menchero_method import sectorAttributions, stockAttributions
+from menchero_multiperiod_attribution import sectorAttributions, stockAttributions
 
 # Example: create or load your data as a pandas DataFrame
 data = pd.DataFrame({
@@ -91,7 +91,7 @@ print(stock_output[0].head())  # if check=True, returns (stock_output, qa_checks
 ### Sector-Level Attributions
 
 ```python
-from menchero_method import sectorAttributions
+from menchero_multiperiod_attribution import sectorAttributions
 
 # Example DataFrame 'df' with columns: 
 #   date, sector, portfolio_weight, benchmark_weight, stock_return, pnl_pct
@@ -109,7 +109,7 @@ sector_result = sectorAttributions(
 ### Stock-Level Attributions
 
 ```python
-from menchero_method import stockAttributions
+from menchero_multiperiod_attribution import stockAttributions
 
 # Example DataFrame 'df' with columns: 
 #   date, sector, stock, portfolio_weight, benchmark_weight, stock_return, pnl_pct

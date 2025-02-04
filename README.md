@@ -42,7 +42,7 @@ This library provides:
 You can install this package via pip:
 
 ```bash
-pip install menchero-method-attributions
+pip install menchero-method
 ```
 
 ---

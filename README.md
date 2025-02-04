@@ -160,7 +160,7 @@ pytest
 
 Contributions, bug reports, and feature requests are welcome! Please:
 
-1) [Open an issue](ADD LINK HERE) describing the problem or suggestion.
+1) [Open an issue](https://github.com/differentialcapital/menchero-multiperiod-attributions/issues) describing the problem or suggestion.
 2) Fork the repo and create a new branch for your contribution.
 3) Submit a pull request with your changes and relevant tests.
 We’ll review your pull request as soon as we can.

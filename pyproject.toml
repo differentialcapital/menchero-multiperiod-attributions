@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=60.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "manchero-method"  # The name users will 'pip install'
+version = "0.1.0"
+description = "Menchero multiperiod performance attribution calculations at a sector and stock level"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Differential Capital Data Science Team", email = "info@differential.co.za" }
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+keywords = ["menchero", "performance", "finance", "attribution"]
+requires-python = ">=3.7"
+dependencies = [
+  "pandas>=1.2",
+  "numpy>=1.18",
+]
+
+[project.urls]
+"Source Code" = "https://github.com/differentialcapital/dev-menchero-smoothing"
+"Documentation" = "https://github.com/differentialcapital/dev-menchero-smoothing/blob/main/README.md"

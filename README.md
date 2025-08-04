@@ -12,7 +12,8 @@ This library provides:
 
 ## Table of Contents
 
-- [Features](#features)  
+- [Features](#features)
+- [Changelog](#changelog)
 - [Installation](#installation)  
 - [Quickstart Example](#quickstart-example)  
 - [Usage](#usage)  
@@ -36,6 +37,12 @@ This library provides:
 - **Verbose** logging mode for debugging and demonstration.  
 
 ---
+
+## Changelog
+
+For a full list of what’s changed in each version, see [CHANGELOG.md](./CHANGELOG.md).
+
+--
 
 ## Installation
 

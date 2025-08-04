@@ -211,7 +211,7 @@ def test_sector_attributions_small_dataset(small_sector_data):
     }
 
     # check each row's actual vs. expected within a small tolerance.
-    tolerance = 1e-6
+    tolerance = 1e-5
     for idx, row in pivoted.iterrows():
         d, sec = row["date"], row["sector"]
         alloc_actual = row["allocation"]

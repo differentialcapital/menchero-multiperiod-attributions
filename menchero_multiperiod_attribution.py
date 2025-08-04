@@ -1,6 +1,7 @@
 # import libraries
 
 # data handling
+import numpy as np
 import pandas as pd
 # type hints
 from typing import Union, Tuple
@@ -85,11 +86,14 @@ def _attributionModify(stock_output, sector_output) -> pd.DataFrame:
     
     # add adjusted selection effect to stock attributions
     stock_output = pd.merge(stock_output, c[["date", "sector", "stock", "variable", "selection_"]], on=["date", "sector", "stock", "variable"], how="left")
-    stock_output["variable_value"] = stock_output.apply(lambda x: x["selection_"] if x["variable"] == "selection" else x["variable_value"], axis=1)
-    stock_output = stock_output.drop("selection_", axis=1)
-    stock_output["variable"] = stock_output.apply(
-        lambda x: "allocation" if x["variable"] == "selection" else ("selection" if x["variable"] == "allocation" else x["variable"]), axis=1
-    )
+    
+    # vectorized swap of selection_ → variable_value
+    mask = stock_output["variable"] == "selection"
+    stock_output.loc[mask, "variable_value"] = stock_output.loc[mask, "selection_"]
+    stock_output = stock_output.drop(columns="selection_")
+
+    # vectorized flip of the labels
+    stock_output["variable"] = np.where(stock_output["variable"] == "selection", "allocation", np.where(stock_output["variable"] == "allocation", "selection", stock_output["variable"]))
     
     return stock_output
 
@@ -237,28 +241,27 @@ def _menchero(input_data, group_vars, check, stock_level=False, verbose=False) -
     if verbose:
         print("Calculated return adjustment.")
         print(agg[["date", "adjusted_return"]].head())
-
-    # function to dynamically calculate adjusted_return values for given date using calculated parameters
-    def _aggs(date):
-        out = agg[agg.index <= date].copy()
-        out["adjusted_return"] = out["multiplicative_factor"][date] + out["corrective_factor"][date] * (out["weighted_portfolio_return"] - out["weighted_benchmark_return"])
-        return out["adjusted_return"]
-
-    # dynamically calculate adjusted returns
+    
+    # vectorize: compute one “adjusted_return” series and merge → group‐cumsum → scale
     agg = agg.set_index("date")
-    betas = {date: _aggs(date) for date in agg.index}
-    
-    # function to apply adjusted returns to performance attribution values
-    def _adjust(grp, g, date, c):
-        df = data[(data[grp] == g) & (data.date <= date)].copy()
-        df[c] = df["date"].map(betas[date]) * df[c]
-        return df[c].sum()
-    
-    # apply adjusted returns
+    agg["adjusted_return"] = (
+        agg["multiplicative_factor"]
+        + agg["corrective_factor"]
+          * (agg["weighted_portfolio_return"] - agg["weighted_benchmark_return"])
+    )
+
+    # bring adjusted_return onto every row
+    data = data.merge(
+        agg[["adjusted_return"]].rename_axis("date"),
+        left_on="date", right_index=True, how="left"
+    )
+
+    # running totals within each subgroup up to each date
+    grp = group_vars[-1]
     data = data.sort_values(group_vars + ["date"])
-    data["allocation_"] = data.apply(lambda x: _adjust(group_vars[-1], x[group_vars[-1]], x["date"], "allocation"), axis=1)
-    data["selection_"] = data.apply(lambda x: _adjust(group_vars[-1], x[group_vars[-1]], x["date"], "selection"), axis=1)
-    data["interaction_"] = data.apply(lambda x: _adjust(group_vars[-1], x[group_vars[-1]], x["date"], "interaction"), axis=1)
+    data["allocation_"]   = data.groupby(grp)["allocation"].cumsum()   * data["adjusted_return"]
+    data["selection_"]    = data.groupby(grp)["selection"].cumsum()    * data["adjusted_return"]
+    data["interaction_"]  = data.groupby(grp)["interaction"].cumsum()  * data["adjusted_return"]
     
     if verbose:
         print("Applied adjustments to performance attributions.")
@@ -384,10 +387,10 @@ def sectorAttributions(raw, pnl=True, check=False, verbose=False) -> Union[pd.Da
     
     # aggregate to sector level 
     sector = sector.groupby(["date", "sector"])[["portfolio_weight", "benchmark_weight", "benchmark_return", "portfolio_return", "pnl_pct"]].sum().reset_index()
-
-    # normalise aggregated returns by weights
-    sector["portfolio_return"] = sector.apply(lambda x: x["portfolio_return"] / x["portfolio_weight"] if x["portfolio_weight"] != 0 else 0, axis=1)
-    sector["benchmark_return"] = sector.apply(lambda x: x["benchmark_return"] / x["benchmark_weight"] if x["benchmark_weight"] != 0 else 0, axis=1)
+    
+    # normalise aggregated returns by weights using vectorized safe‐division 
+    sector["portfolio_return"] = np.where(sector["portfolio_weight"] != 0, sector["portfolio_return"] / sector["portfolio_weight"], 0)
+    sector["benchmark_return"] = np.where(sector["benchmark_weight"] != 0, sector["benchmark_return"] / sector["benchmark_weight"], 0)
 
     # calculate weighted returns
     sector["weighted_portfolio_return"] = sector["portfolio_return"] * sector["portfolio_weight"]

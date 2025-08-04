@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Removed
 - Legacy row-wise loops and `apply()`-based code blocks.
 
-## [0.1.2] - 2025-06-15
+## [0.1.2] - 2025-02-04
 - Initial PyPI release with core Menchero multiperiod smoothing methods.
 - Provided `sectorAttributions` and `stockAttributions` user-facing functions.
 
